@@ -1,3 +1,7 @@
+from functools import lru_cache
+import importlib.resources as pkg_resources
+from pathlib import Path
+
 import esphome.codegen as cg
 import esphome.config_validation as cv
 from esphome import pins
@@ -27,7 +31,7 @@ from esphome.const import (
     CONF_RETAIN,
 )
 
-from esphome.const import SOURCE_FILE_EXTENSIONS
+from esphome.core import CORE
 
 CONF_TRANSPORT = "transport"
 
@@ -52,6 +56,10 @@ CODEOWNERS = ["@SzczepanLeon"]
 
 DEPENDENCIES = ["time"]
 AUTO_LOAD = ["sensor", "text_sensor"]
+
+WMBUS_DATA_KEY = "wmbus"
+DATA_SELECTED_DRIVERS = "selected_drivers"
+DATA_INCLUDE_ALL = "include_all_drivers"
 
 wmbus_ns = cg.esphome_ns.namespace('wmbus')
 WMBusComponent = wmbus_ns.class_('WMBusComponent', cg.Component)
@@ -124,6 +132,75 @@ CONFIG_SCHEMA = cv.Schema({
     cv.Optional(CONF_WMBUS_MQTT_RAW_FORMAT, default="JSON"): cv.templatable(validate_raw_format),
     cv.Optional(CONF_WMBUS_MQTT_RAW_PARSED, default=True): cv.boolean,
 })
+
+
+def _wmbus_data() -> dict:
+    return CORE.data.setdefault(WMBUS_DATA_KEY, {})
+
+
+def _configure_driver_sources(include_all: bool) -> None:
+    data = _wmbus_data()
+    data[DATA_INCLUDE_ALL] = include_all
+    if not include_all:
+        # Ensure fallback driver is always available when filtering.
+        request_driver_source("driver_unknown.cpp")
+
+
+def request_driver_source(driver: str) -> None:
+    """Ensure the given driver source file is included in the build output."""
+    if not driver:
+        return
+
+    lower = driver.lower()
+    if lower.endswith(".cpp") and lower.startswith("driver_"):
+        filename = lower
+    else:
+        filename = f"driver_{lower}.cpp"
+
+    data = _wmbus_data()
+    selected = data.setdefault(DATA_SELECTED_DRIVERS, set())
+    selected.add(filename)
+
+
+@lru_cache()
+def _available_driver_sources() -> list[str]:
+    try:
+        candidates = list(pkg_resources.files(__package__).iterdir())
+    except (FileNotFoundError, ModuleNotFoundError, AttributeError):
+        try:
+            candidates = list(Path(__file__).parent.iterdir())
+        except OSError:
+            return []
+
+    driver_files: list[str] = []
+    for entry in candidates:
+        name = getattr(entry, "name", Path(entry).name)
+        try:
+            is_file = entry.is_file()
+        except AttributeError:
+            # Fallback for simple pathlib.Path entries
+            is_file = Path(entry).is_file()
+        if not is_file:
+            continue
+        if name.startswith("driver_") and name.endswith(".cpp"):
+            driver_files.append(name)
+    return driver_files
+
+
+def FILTER_SOURCE_FILES() -> list[str]:
+    """Selectively exclude WMBus driver sources depending on configuration."""
+    data = CORE.data.get(WMBUS_DATA_KEY, {})
+    if data.get(DATA_INCLUDE_ALL, False):
+        return []
+
+    selected = {name.lower() for name in data.get(DATA_SELECTED_DRIVERS, set())}
+    selected.add("driver_unknown.cpp")
+
+    excluded: list[str] = []
+    for filename in _available_driver_sources():
+        if filename.lower() not in selected:
+            excluded.append(filename)
+    return excluded
 
 def safe_ip(ip):
     if ip is None:
@@ -198,11 +275,4 @@ async def to_code(config):
     cg.add_library("SPI", None)
     cg.add_library("LSatan/SmartRC-CC1101-Driver-Lib", "2.5.7")
 
-    cg.add_platformio_option("build_src_filter", ["+<*>", "-<.git/>", "-<.svn/>"])
-
-    if config[CONF_ALL_DRIVERS]:
-        cg.add_platformio_option("build_src_filter", ["+<**/wmbus/driver_*.cpp>"])
-    else:
-        cg.add_platformio_option("build_src_filter", ["-<**/wmbus/driver_*.cpp>"])
-
-    cg.add_platformio_option("build_src_filter", ["+<**/wmbus/driver_unknown.cpp>"])
+    _configure_driver_sources(config[CONF_ALL_DRIVERS])
