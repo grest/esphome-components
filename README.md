@@ -1,13 +1,9 @@
 Version 5 based on Kuba's dirty [fork](https://github.com/IoTLabs-pl/esphome-components).
 
-> **_NOTE:_**  Component with CC1101 support is here:
-[version 4](https://github.com/SzczepanLeon/esphome-components/tree/version_4)
-[version 3](https://github.com/SzczepanLeon/esphome-components/tree/version_3)
-[version 2](https://github.com/SzczepanLeon/esphome-components/tree/version_2)
+> **_NOTE:_**  CC1101 support is available in this branch via `radio_type: CC1101`.
 
 
 # TODO:
-- Add backward support for CC1101
 - Add support for SX1262 (with limited frame length)
 - ...
 - Prepare packages for ready made boards (like UltimateReader) with displays, leds etc.
@@ -29,6 +25,7 @@ Version 5 based on Kuba's dirty [fork](https://github.com/IoTLabs-pl/esphome-com
 - Re-pull of wmbusmeters code from upstream
 - Reimplement TCP and UCP senders. Should be classes with common interface to use as action under Radio->on packet trigger
 - Reimplement HEX and RTLWMBUS formatter to use as parameter of TCP/UDP action
+- Add backward support for CC1101
 
 
 # Usage example:

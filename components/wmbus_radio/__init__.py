@@ -26,6 +26,8 @@ CONF_RADIO_ID = "radio_id"
 CONF_ON_FRAME = "on_frame"
 CONF_RADIO_TYPE = "radio_type"
 CONF_MARK_AS_HANDLED = "mark_as_handled"
+CONF_FREQUENCY = "frequency"
+CONF_SYNC_MODE = "sync_mode"
 
 radio_ns = cg.esphome_ns.namespace("wmbus_radio")
 RadioComponent = radio_ns.class_("Radio", cg.Component)
@@ -51,6 +53,10 @@ CONFIG_SCHEMA = (
             cv.Required(CONF_RADIO_TYPE): cv.one_of(*TRANSCEIVER_NAMES, upper=True),
             cv.Required(CONF_RESET_PIN): pins.internal_gpio_output_pin_schema,
             cv.Required(CONF_IRQ_PIN): pins.internal_gpio_input_pin_schema,
+            cv.Optional(CONF_FREQUENCY, default=868.950): cv.float_range(
+                min=300.0, max=1000.0
+            ),
+            cv.Optional(CONF_SYNC_MODE, default=False): cv.boolean,
             cv.Optional(CONF_ON_FRAME): automation.validate_automation(
                 {
                     cv.GenerateID(CONF_TRIGGER_ID): cv.declare_id(FrameTrigger),
@@ -80,6 +86,10 @@ async def to_code(config):
 
     await spi.register_spi_device(radio_var, config)
     await cg.register_component(radio_var, config)
+
+    if config[CONF_RADIO_TYPE] == "CC1101":
+        cg.add(radio_var.set_frequency(config[CONF_FREQUENCY]))
+        cg.add(radio_var.set_sync_mode(config[CONF_SYNC_MODE]))
 
     cg.add(cg.LineComment("WMBus Component"))
     var = cg.new_Pvariable(config[CONF_ID])

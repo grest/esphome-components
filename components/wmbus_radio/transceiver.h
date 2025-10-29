@@ -26,7 +26,7 @@ public:
   virtual int8_t get_rssi() = 0;
   virtual const char *get_name() = 0;
 
-  bool read_in_task(uint8_t *buffer, size_t length);
+  virtual bool read_in_task(uint8_t *buffer, size_t length);
 
   void set_spi(spi::SPIDelegate *spi);
   void set_reset_pin(InternalGPIOPin *reset_pin);
