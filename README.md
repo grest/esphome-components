@@ -86,6 +86,8 @@ wmbus_radio:
   cs_pin: GPIO18
   reset_pin: GPIO14
   irq_pin: GPIO35
+  # Optional for CC1101 radios:
+  # gdo2_pin: GPIO4
   on_frame:
     - then:
         - logger.log:

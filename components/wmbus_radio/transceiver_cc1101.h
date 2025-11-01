@@ -18,6 +18,7 @@ public:
 
   void set_frequency(float frequency_mhz);
   void set_sync_mode(bool sync_mode);
+  void set_gdo2_pin(InternalGPIOPin *pin);
 
 private:
   bool capture_packet();
@@ -48,6 +49,7 @@ private:
   bool sync_mode_{false};
 
   int8_t last_rssi_{0};
+  InternalGPIOPin *gdo2_pin_{nullptr};
 
   enum class LengthMode : uint8_t { INFINITE, FIXED };
   LengthMode length_mode_{LengthMode::INFINITE};

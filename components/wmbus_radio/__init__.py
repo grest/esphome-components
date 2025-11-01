@@ -28,6 +28,7 @@ CONF_RADIO_TYPE = "radio_type"
 CONF_MARK_AS_HANDLED = "mark_as_handled"
 CONF_FREQUENCY = "frequency"
 CONF_SYNC_MODE = "sync_mode"
+CONF_GDO2_PIN = "gdo2_pin"
 
 radio_ns = cg.esphome_ns.namespace("wmbus_radio")
 RadioComponent = radio_ns.class_("Radio", cg.Component)
@@ -57,6 +58,7 @@ CONFIG_SCHEMA = (
                 min=300.0, max=1000.0
             ),
             cv.Optional(CONF_SYNC_MODE, default=False): cv.boolean,
+            cv.Optional(CONF_GDO2_PIN): pins.internal_gpio_input_pin_schema,
             cv.Optional(CONF_ON_FRAME): automation.validate_automation(
                 {
                     cv.GenerateID(CONF_TRIGGER_ID): cv.declare_id(FrameTrigger),
@@ -90,6 +92,9 @@ async def to_code(config):
     if config[CONF_RADIO_TYPE] == "CC1101":
         cg.add(radio_var.set_frequency(config[CONF_FREQUENCY]))
         cg.add(radio_var.set_sync_mode(config[CONF_SYNC_MODE]))
+        if CONF_GDO2_PIN in config:
+            gdo2_pin = await cg.gpio_pin_expression(config[CONF_GDO2_PIN])
+            cg.add(radio_var.set_gdo2_pin(gdo2_pin))
 
     cg.add(cg.LineComment("WMBus Component"))
     var = cg.new_Pvariable(config[CONF_ID])

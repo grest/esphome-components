@@ -26,6 +26,10 @@ static constexpr uint32_t DATA_TIMEOUT_MS = 120;
 void CC1101::setup() {
   this->common_setup();
 
+  if (this->gdo2_pin_ != nullptr) {
+    this->gdo2_pin_->setup();
+  }
+
   ESP_LOGD(TAG, "Resetting CC1101");
   this->reset();
   delay(5);
@@ -73,6 +77,8 @@ void CC1101::set_frequency(float frequency_mhz) {
 
 void CC1101::set_sync_mode(bool sync_mode) { this->sync_mode_ = sync_mode; }
 
+void CC1101::set_gdo2_pin(InternalGPIOPin *pin) { this->gdo2_pin_ = pin; }
+
 void CC1101::restart_rx() {
   this->packet_ready_ = false;
   this->packet_buffer_.clear();
@@ -107,6 +113,9 @@ bool CC1101::capture_packet() {
 
   auto wait_start = millis();
   while (true) {
+    if (this->gdo2_pin_ != nullptr && this->gdo2_pin_->digital_read()) {
+      break;
+    }
     uint8_t status = this->spi_read_status(CC1101_RXBYTES);
     if (status & 0x80) {
       ESP_LOGW(TAG, "RX FIFO overflow while waiting for data");
@@ -363,4 +372,3 @@ size_t CC1101::byte_size(size_t packet_size_value) {
 
 }  // namespace wmbus_radio
 }  // namespace esphome
-
