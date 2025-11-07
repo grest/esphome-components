@@ -1,14 +1,12 @@
 Version 5 based on Kuba's dirty [fork](https://github.com/IoTLabs-pl/esphome-components).
 
-> **_NOTE:_**  CC1101 support is available in this branch via `radio_type: CC1101`.
-
-
 # TODO:
 - Add support for SX1262 (with limited frame length)
 - ...
 - Prepare packages for ready made boards (like UltimateReader) with displays, leds etc.
 - Aggresive cleanup of wmbusmeters classes/structs
 - Refactor traces/logs
+- Add esp-idf support for CC1101 (only arduino works now)
 
 # DONE:
 - Reuse CRCs and frame parsers from wmbusmeters
@@ -25,7 +23,7 @@ Version 5 based on Kuba's dirty [fork](https://github.com/IoTLabs-pl/esphome-com
 - Re-pull of wmbusmeters code from upstream
 - Reimplement TCP and UCP senders. Should be classes with common interface to use as action under Radio->on packet trigger
 - Reimplement HEX and RTLWMBUS formatter to use as parameter of TCP/UDP action
-- Add backward support for CC1101
+- Add backward support for CC1101 (only with arduino framework)
 
 
 # Usage example:
@@ -44,6 +42,8 @@ esp32:
   flash_size: 8MB
   framework:
     type: esp-idf
+    # For CC1101
+    # type: arduino
   
 logger:
   id: component_logger
@@ -83,6 +83,8 @@ mqtt:
 
 wmbus_radio:
   radio_type: SX1276
+  # For CC1101 radios:
+  # radio_type: CC1101
   cs_pin: GPIO18
   reset_pin: GPIO14
   irq_pin: GPIO35
