@@ -6,7 +6,7 @@ Version 5 based on Kuba's dirty [fork](https://github.com/IoTLabs-pl/esphome-com
 - Prepare packages for ready made boards (like UltimateReader) with displays, leds etc.
 - Aggresive cleanup of wmbusmeters classes/structs
 - Refactor traces/logs
-- Add esp-idf support for CC1101 (only arduino works now)
+- Add esp-idf support for CC1101 (only arduino framework supported now)
 
 # DONE:
 - Reuse CRCs and frame parsers from wmbusmeters
@@ -23,7 +23,7 @@ Version 5 based on Kuba's dirty [fork](https://github.com/IoTLabs-pl/esphome-com
 - Re-pull of wmbusmeters code from upstream
 - Reimplement TCP and UCP senders. Should be classes with common interface to use as action under Radio->on packet trigger
 - Reimplement HEX and RTLWMBUS formatter to use as parameter of TCP/UDP action
-- Add backward support for CC1101 (only with arduino framework)
+- Add backward support for CC1101 (only arduino framework supported now)
 
 
 # Usage example:
