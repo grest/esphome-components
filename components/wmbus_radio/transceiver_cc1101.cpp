@@ -111,11 +111,10 @@ bool CC1101::capture_packet() {
   const uint32_t data_timeout =
       this->sync_mode_ ? DATA_TIMEOUT_MS * 4 : DATA_TIMEOUT_MS;
 
+  this->wait_for_gdo2_assert(initial_timeout);
+
   auto wait_start = millis();
   while (true) {
-    if (this->gdo2_pin_ != nullptr && this->gdo2_pin_->digital_read()) {
-      break;
-    }
     uint8_t status = this->spi_read_status(CC1101_RXBYTES);
     if (status & 0x80) {
       ESP_LOGW(TAG, "RX FIFO overflow while waiting for data");
@@ -225,6 +224,8 @@ bool CC1101::capture_packet() {
 
   this->last_rssi_ = this->read_rssi_register();
 
+  this->wait_for_irq_level(false, data_timeout);
+
   this->packet_ready_ = true;
   this->bytes_delivered_ = 0;
 
@@ -326,6 +327,30 @@ int8_t CC1101::read_rssi_register() {
 int8_t CC1101::get_rssi() { return this->last_rssi_; }
 
 const char *CC1101::get_name() { return TAG; }
+
+bool CC1101::wait_for_irq_level(bool level, uint32_t timeout_ms) {
+  if (this->irq_pin_ == nullptr)
+    return true;
+  auto start = millis();
+  while (this->irq_pin_->digital_read() != level) {
+    if (millis() - start > timeout_ms)
+      return false;
+    delayMicroseconds(50);
+  }
+  return true;
+}
+
+bool CC1101::wait_for_gdo2_assert(uint32_t timeout_ms) {
+  if (this->gdo2_pin_ == nullptr)
+    return true;
+  auto start = millis();
+  while (!this->gdo2_pin_->digital_read()) {
+    if (millis() - start > timeout_ms)
+      return false;
+    delayMicroseconds(50);
+  }
+  return true;
+}
 
 uint8_t CC1101::spi_read_config(uint8_t address) {
   return this->spi_transaction(0x80, address, {0});

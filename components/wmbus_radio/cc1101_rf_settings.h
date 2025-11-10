@@ -13,7 +13,7 @@ inline constexpr uint8_t TMODE_RF_SETTINGS_LEN = 47;
 inline constexpr std::array<uint8_t, TMODE_RF_SETTINGS_LEN * 2>
     TMODE_RF_SETTINGS_BYTES = {
         // Type B
-        CC1101_IOCFG2,   0x06, CC1101_IOCFG1,   0x2E, CC1101_IOCFG0,   0x00,
+        CC1101_IOCFG2,   0x06, CC1101_IOCFG1,   0x2E, CC1101_IOCFG0,   0x06,
         CC1101_FIFOTHR,  0x07, CC1101_SYNC1,    0x54, CC1101_SYNC0,    0x3D,
         CC1101_PKTLEN,   0xFF, CC1101_PKTCTRL1, 0x00, CC1101_PKTCTRL0, 0x00,
         CC1101_ADDR,     0x00, CC1101_CHANNR,   0x00, CC1101_FSCTRL1,  0x08,
@@ -32,4 +32,3 @@ inline constexpr std::array<uint8_t, TMODE_RF_SETTINGS_LEN * 2>
 
 }  // namespace wmbus_radio
 }  // namespace esphome
-

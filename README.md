@@ -189,8 +189,11 @@ text_sensor:
     parent_id: electricity_meter
     field: current_alarms
     name: Electricity Meter alarms
+wmbus_radio parameters:
+- `radio_type` – currently `SX1276` or `CC1101`
+- `cs_pin`, `reset_pin`, `irq_pin` – SPI CS, reset, and interrupt lines (for CC1101 the IRQ line is GDO0)
+- `gdo2_pin` – optional CC1101 SYNC pin (GDO2); provides earlier detection of frames
 ```
-
 For SX1276 radio you need to configure SPI instance as usual in ESPHome and additionally specify reset pin and IRQ pin (as DIO1). Interrupts are triggered on non empty FIFO. 
 
 In order to pull latest wmbusmeters code run:

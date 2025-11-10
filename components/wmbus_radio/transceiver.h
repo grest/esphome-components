@@ -31,12 +31,10 @@ public:
   void set_spi(spi::SPIDelegate *spi);
   void set_reset_pin(InternalGPIOPin *reset_pin);
   void set_irq_pin(InternalGPIOPin *irq_pin);
-  void set_aux_irq_pin(InternalGPIOPin *aux_irq_pin);
 
 protected:
   InternalGPIOPin *reset_pin_;
   InternalGPIOPin *irq_pin_;
-  InternalGPIOPin *aux_irq_pin_{nullptr};
 
   virtual optional<uint8_t> read() = 0;
 

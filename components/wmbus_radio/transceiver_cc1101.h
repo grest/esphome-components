@@ -29,6 +29,8 @@ private:
   void apply_frequency();
   void handle_fifo_overflow();
   int8_t read_rssi_register();
+  bool wait_for_irq_level(bool level, uint32_t timeout_ms);
+  bool wait_for_gdo2_assert(uint32_t timeout_ms);
 
   uint8_t spi_read_config(uint8_t address);
   uint8_t spi_read_status(uint8_t address);
