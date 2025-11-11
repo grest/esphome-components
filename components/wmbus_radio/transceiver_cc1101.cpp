@@ -111,7 +111,12 @@ bool CC1101::capture_packet() {
   const uint32_t data_timeout =
       this->sync_mode_ ? DATA_TIMEOUT_MS * 4 : DATA_TIMEOUT_MS;
 
-  this->wait_for_gdo2_assert(initial_timeout);
+  bool sync_asserted = this->wait_for_gdo2_assert(initial_timeout);
+  if (!sync_asserted) {
+    ESP_LOGW(TAG, "Sync timeout, checking FIFO directly");
+    if (!this->wait_for_fifo_data(initial_timeout))
+      return false;
+  }
 
   auto wait_start = millis();
   while (true) {
@@ -123,8 +128,11 @@ bool CC1101::capture_packet() {
     }
     if ((status & 0x7F) > 0)
       break;
-    if ((millis() - wait_start) > initial_timeout)
+    if ((millis() - wait_start) > initial_timeout) {
+      if (this->wait_for_fifo_data(5))
+        break;
       return false;
+    }
     delayMicroseconds(100);
   }
 
@@ -350,6 +358,22 @@ bool CC1101::wait_for_gdo2_assert(uint32_t timeout_ms) {
     delayMicroseconds(50);
   }
   return true;
+}
+
+bool CC1101::wait_for_fifo_data(uint32_t timeout_ms) {
+  auto start = millis();
+  while (millis() - start <= timeout_ms) {
+    uint8_t status = this->spi_read_status(CC1101_RXBYTES);
+    if (status & 0x80) {
+      ESP_LOGW(TAG, "RX FIFO overflow while probing data");
+      this->handle_fifo_overflow();
+      return false;
+    }
+    if (status & 0x7F)
+      return true;
+    delayMicroseconds(50);
+  }
+  return false;
 }
 
 uint8_t CC1101::spi_read_config(uint8_t address) {
