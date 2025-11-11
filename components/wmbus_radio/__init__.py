@@ -2,7 +2,7 @@ from contextlib import suppress
 import esphome.codegen as cg
 import esphome.config_validation as cv
 from esphome import pins, automation
-from esphome.components import spi
+from esphome.components import spi, text_sensor
 from esphome.cpp_generator import LambdaExpression
 from esphome.const import (
     CONF_ID,
@@ -28,6 +28,7 @@ CONF_RADIO_TYPE = "radio_type"
 CONF_MARK_AS_HANDLED = "mark_as_handled"
 CONF_FREQUENCY = "frequency"
 CONF_SYNC_MODE = "sync_mode"
+CONF_STATUS = "status"
 CONF_GDO2_PIN = "gdo2_pin"
 
 radio_ns = cg.esphome_ns.namespace("wmbus_radio")
@@ -65,6 +66,7 @@ CONFIG_SCHEMA = (
                     cv.Optional(CONF_MARK_AS_HANDLED, default=False): cv.boolean,
                 }
             ),
+            cv.Optional(CONF_STATUS): text_sensor.text_sensor_schema(),
         }
     )
     .extend(spi.spi_device_schema())
@@ -99,6 +101,10 @@ async def to_code(config):
     cg.add(cg.LineComment("WMBus Component"))
     var = cg.new_Pvariable(config[CONF_ID])
     cg.add(var.set_radio(radio_var))
+
+    if CONF_STATUS in config:
+        status_sensor = await text_sensor.new_text_sensor(config[CONF_STATUS])
+        cg.add(var.set_status_sensor(status_sensor))
 
     await cg.register_component(var, config)
 

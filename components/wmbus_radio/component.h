@@ -9,6 +9,7 @@
 
 #include "esphome/components/spi/spi.h"
 #include "esphome/components/wmbus_common/wmbus.h"
+#include "esphome/components/text_sensor/text_sensor.h"
 
 #include "packet.h"
 #include "transceiver.h"
@@ -25,6 +26,10 @@ public:
   void receive_frame();
 
   void add_frame_handler(std::function<void(Frame *)> &&callback);
+  void set_status_sensor(text_sensor::TextSensor *sensor) {
+    this->status_sensor_ = sensor;
+  }
+  void publish_status(const std::string &status);
 
 protected:
   static void wakeup_receiver_task_from_isr(TaskHandle_t *arg);
@@ -35,6 +40,7 @@ protected:
   QueueHandle_t packet_queue_{nullptr};
 
   std::vector<std::function<void(Frame *)>> handlers_;
+  text_sensor::TextSensor *status_sensor_{nullptr};
 };
 } // namespace wmbus_radio
 } // namespace esphome

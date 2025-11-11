@@ -90,6 +90,8 @@ wmbus_radio:
   irq_pin: GPIO35
   # Optional for CC1101 radios:
   # gdo2_pin: GPIO4
+  # status:
+  #   name: "Radio Status"
   on_frame:
     - then:
         - logger.log:
@@ -193,6 +195,7 @@ wmbus_radio parameters:
 - `radio_type` – currently `SX1276` or `CC1101`
 - `cs_pin`, `reset_pin`, `irq_pin` – SPI CS, reset, and interrupt lines (for CC1101 the IRQ line is GDO0)
 - `gdo2_pin` – optional CC1101 SYNC pin (GDO2); provides earlier detection of frames
+- `status` – optional text sensor publishing the last radio/error status
 ```
 For SX1276 radio you need to configure SPI instance as usual in ESPHome and additionally specify reset pin and IRQ pin (as DIO1). Interrupts are triggered on non empty FIFO. 
 
